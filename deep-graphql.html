@@ -1,0 +1,57 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+
+<dom-module id="deep-graphql">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <iron-ajax
+
+      auto="[[auto]]"
+      reject-with-request
+      with-auth
+      bubbles
+    ></iron-ajax>
+
+  </template>
+
+  <script>
+    /**
+     * `deep-graphql`
+     * Polymer integration with GraphQL
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+     Polymer({
+       is: 'deep-graphql',
+       properties: {
+         /* GraphQL Data interface */
+         data: {
+           type: Object,
+           value() {
+             return {};
+           },
+           notify: true
+         },
+         /* GraphQL Query */
+         query: {
+           type: Object,
+           value() {
+             return {};
+           }
+         },
+         /* Pass-through to iron-ajax. Automatically triggers requests. */
+         auto: {
+           type: Boolean,
+           value: false
+         }
+       }
+     });
+  </script>
+</dom-module>
