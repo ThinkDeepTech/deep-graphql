@@ -73,14 +73,16 @@
         * object.
         */
        query(query = this.query) {
-         let data = {};
          this.$.service.params = this.__formatQuery(query);
          return this.$.service.generateRequest().completes.then(({response}) => {
-           if(response) data = response;
+           const data = response ? response : {};
+           this.set('data', data);
          }, (err) => {
-           console.warn(`${this.localName}: GraphQL request failed for query: '${query}'. Data will default to {}`);
+           console.warn(`${this.localName}: GraphQL request failed for query: '${query}'.
+            Data will default to {}`);
+           this.set('data', {});
          }).then(() => {
-           return data;
+           return this.get('data');
          });
        },
        /**
