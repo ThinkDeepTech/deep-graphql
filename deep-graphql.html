@@ -1,6 +1,8 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 
+<!-- TODO: Different method types needed? Not just post, get, etc... -->
+
 <dom-module id="deep-graphql">
   <template>
     <style>
@@ -10,8 +12,13 @@
     </style>
 
     <iron-ajax
-
+      id="service"
+      url="[[url]]"
       auto="[[auto]]"
+      headers="[[headers]]"
+      handle-as="json"
+      params="[[__formatQuery(query)]]"
+      last-response="{{data}}"
       reject-with-request
       with-auth
       bubbles
@@ -31,7 +38,7 @@
      Polymer({
        is: 'deep-graphql',
        properties: {
-         /* GraphQL Data interface */
+         /* Graphql data interface corresponding to { data: {...} } */
          data: {
            type: Object,
            value() {
@@ -39,18 +46,55 @@
            },
            notify: true
          },
-         /* GraphQL Query */
+         /* Graphql query */
          query: {
            type: Object,
            value() {
              return {};
            }
          },
+         /* Graphql service url */
+         url: {
+           type: String,
+           value: '/graphql'
+         },
+         /* Request headers. */
+         headers: Object,
          /* Pass-through to iron-ajax. Automatically triggers requests. */
          auto: {
            type: Boolean,
            value: false
          }
+       },
+       /**
+        * Run query against the GraphQL service.
+        * @param {Object} query - GraphQL query.
+        * @return {Promise} - Resolves upon completion of the query with the data
+        * object.
+        */
+       query(query = this.query) {
+         let data = {};
+         this.$.service.params = this.__formatQuery(query);
+         return this.$.service.generateRequest().completes.then(({response}) => {
+           if(response) data = response;
+         }, (err) => {
+           console.warn(`${this.localName}: GraphQL request failed for query: '${query}'. Data will default to {}`);
+         }).then(() => {
+           return data;
+         });
+       },
+       /**
+        * Format the user-defined query such that it conforms to GraphQL query
+        * syntax.
+        * @private
+        * @param {Object} query - The GraphQL query to issue.
+        * @return {Object} - Formatted query or an empty object.
+        */
+       __formatQuery(query) {
+         if (!Object.keys(query).length) return {};
+         // TODO: Implement this such that it actually works. Right now, hardcode
+         // to validate hitting EP.
+         return {query};
        }
      });
   </script>
