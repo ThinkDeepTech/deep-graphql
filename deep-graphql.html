@@ -109,18 +109,30 @@
          // more experience with graphql before adapting to alternate types.
          // TODO This won't work with arrays because the json object specifies
          // objects but an array will be returned to populate that field (i.e, items).
-         // TODO Attempt DP implementation to gain experience with that.
+         // TODO Attempt DP implementation to gain experience with that. Execution speed
+         // wont increase because of recursive subproblems not overlapping but would still
+         // be awesome.
           if (typeof subject !== 'object') {
             return '';
           } else {
-            let query = '{ ';
-            for (const field in subject) {
-              if (subject.hasOwnProperty(field)) {
-                query =
-                  query.concat(` ${field} `).concat(this.__buildQuery(subject[field]));
+            let query = '';
+            // An array is also considered an object using typeof
+            if (Array.isArray(subject)) {
+              if (subject.length) {
+                // Grab fields from an arbitrary entry
+                query = query.concat(this.__buildQuery(subject[0]));
               }
+            } else {
+              query = query.concat('{ ');
+              for (const field in subject) {
+                if (subject.hasOwnProperty(field)) {
+                  query =
+                    query.concat(` ${field} `).concat(this.__buildQuery(subject[field]));
+                }
+              }
+              query = query.concat(' }');
             }
-            return query.concat(' }');
+            return query;
           }
        },
        /**
