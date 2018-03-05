@@ -100,15 +100,11 @@
        /**
         * Recursively build the query from object to construct query.
         * @private
-        * @param {*} subject - Instance used to determine whether it's needed in
-        * the query.
+        * @param {*} subject - Primitive type instance used to determine whether
+        * it's needed in the query.
         * @return {String} - The relevant query result.
         */
        __buildQuery(subject) {
-         // TODO NOTE Right now this will only support object querries. I need
-         // more experience with graphql before adapting to alternate types.
-         // TODO This won't work with arrays because the json object specifies
-         // objects but an array will be returned to populate that field (i.e, items).
          // TODO Attempt DP implementation to gain experience with that. Execution speed
          // wont increase because of recursive subproblems not overlapping but would still
          // be awesome.
