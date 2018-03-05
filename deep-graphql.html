@@ -17,8 +17,8 @@
       auto="[[auto]]"
       headers="[[headers]]"
       handle-as="json"
-      params="[[__formatQuery(query)]]"
-      last-response="{{data}}"
+      params="[[__query(queryObject)]]"
+      on-response="__formatData"
       reject-with-request
       with-auth
       bubbles
@@ -46,8 +46,8 @@
            },
            notify: true
          },
-         /* Graphql query */
-         query: {
+         /* Graphql query object. The json object structure to hydrate */
+         queryObject: {
            type: Object,
            value() {
              return {};
@@ -89,14 +89,47 @@
         * Format the user-defined query such that it conforms to GraphQL query
         * syntax.
         * @private
-        * @param {Object} query - The GraphQL query to issue.
+        * @param {Object} data - The object structure to hydrate.
         * @return {Object} - Formatted query or an empty object.
         */
-       __formatQuery(query) {
-         if (!Object.keys(query).length) return {};
-         // TODO: Implement this such that it actually works. Right now, hardcode
-         // to validate hitting EP.
-         return {query};
+       __query(data) {
+         if (!Object.keys(data || {}).length) return {};
+         return {query: this.__buildQuery(data)};
+       },
+       /**
+        * Recursively build the query from object to construct query.
+        * @private
+        * @param {*} subject - Instance used to determine whether it's needed in
+        * the query.
+        * @return {String} - The relevant query result.
+        */
+       __buildQuery(subject) {
+         // TODO NOTE Right now this will only support object querries. I need
+         // more experience with graphql before adapting to alternate types.
+         // TODO This won't work with arrays because the json object specifies
+         // objects but an array will be returned to populate that field (i.e, items).
+         // TODO Attempt DP implementation to gain experience with that.
+          if (typeof subject !== 'object') {
+            return '';
+          } else {
+            let query = '{ ';
+            for (const field in subject) {
+              if (subject.hasOwnProperty(field)) {
+                query =
+                  query.concat(` ${field} `).concat(this.__buildQuery(subject[field]));
+              }
+            }
+            return query.concat(' }');
+          }
+       },
+       /**
+        * Format the data for exposure through the public interface.
+        * @private
+        * @param {Event} e
+        */
+       __formatData(e) {
+         if(!e || !e.detail || !e.detail.response) return;
+         this.data = e.detail.response.data;
        }
      });
   </script>
