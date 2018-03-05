@@ -11,14 +11,16 @@
       }
     </style>
 
+    <!-- TODO: How to make auto work with data input? It's triggering infinite loop. -->
     <iron-ajax
-      id="service"
+      id="ajax"
       url="[[url]]"
       auto="[[auto]]"
       headers="[[headers]]"
       handle-as="json"
-      params="[[__query(queryObject)]]"
+      params="[[__query(data)]]"
       on-response="__formatData"
+      debounce-duration="[[debounceDuration]]"
       reject-with-request
       with-auth
       bubbles
@@ -38,21 +40,17 @@
      Polymer({
        is: 'deep-graphql',
        properties: {
-         /* Graphql data interface corresponding to { data: {...} } */
+         /*
+          * Graphql data interface corresponding to { data: {...} }. This object
+          * should be bound to a JSON object that needs to be hydrated. The
+          * query will be extracted based on the JSON structure of the object.
+          */
          data: {
            type: Object,
            value() {
              return {};
            },
            notify: true
-         },
-         // TODO: Better name for this concept.
-         /* Graphql query object. The json object structure to hydrate */
-         queryObject: {
-           type: Object,
-           value() {
-             return {};
-           }
          },
          /* Graphql service url */
          url: {
@@ -69,22 +67,25 @@
        },
        /**
         * Run query against the GraphQL service.
-        * @param {Object} query - GraphQL query.
+        * @param {Object} json - JSON structure one would like receive. The query
+        * is computed based on the object structure to hydrate.
         * @return {Promise} - Resolves upon completion of the query with the data
         * object.
         */
-       query(query = this.query) {
-         this.$.service.params = this.__formatQuery(query);
-         return this.$.service.generateRequest().completes.then(({response}) => {
-           const data = response ? response : {};
-           this.set('data', data);
+       query(json) {
+         this.$.ajax.params = this.__query(json || {});
+         return this.$.ajax.generateRequest().completes.then(() => {
+           // Success is handled by event handler attached to iron ajax
          }, (err) => {
            console.warn(`${this.localName}: GraphQL request failed for query: '${query}'.
-            Data will default to {}`);
-           this.set('data', {});
+            Data will default to what was passed.`);
+           this.data = json || {};
          }).then(() => {
-           return this.get('data');
+           return this.data;
          });
+       },
+       mutate(obj) {
+         // TODO
        },
        /**
         * Format the user-defined query such that it conforms to GraphQL query
@@ -134,11 +135,12 @@
        /**
         * Format the data for exposure through the public interface.
         * @private
-        * @param {Event} e
+        * @param {Event} e - Event triggered after ajax request completes.
+        * @return {Object} - Formatted data object or {}.
         */
        __formatData(e) {
-         if(!e || !e.detail || !e.detail.response) return;
-         this.data = e.detail.response.data;
+         if (!e || !e.detail || !e.detail.response) return {};
+         this.data = e.detail.response.data || {};
        }
      });
   </script>
