@@ -12,10 +12,10 @@
     </style>
 
     <!-- TODO: How to make auto work with data input? It's triggering infinite loop. -->
+    <!-- auto="[[auto]]" -->
     <iron-ajax
       id="ajax"
       url="[[url]]"
-      auto="[[auto]]"
       headers="[[headers]]"
       handle-as="json"
       params="[[__query(data)]]"
