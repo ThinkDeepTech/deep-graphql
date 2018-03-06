@@ -67,12 +67,12 @@
        },
        /**
         * Run query against the GraphQL service.
-        * @param {Object} json - JSON structure one would like receive. The query
+        * @param {Object} [json = this.data] - JSON structure one would like receive. The query
         * is computed based on the object structure to hydrate.
         * @return {Promise} - Resolves upon completion of the query with the data
         * object.
         */
-       query(json) {
+       query(json = this.data) {
          this.$.ajax.params = this.__query(json || {});
          return this.$.ajax.generateRequest().completes.then(() => {
            // Success is handled by event handler attached to iron ajax
